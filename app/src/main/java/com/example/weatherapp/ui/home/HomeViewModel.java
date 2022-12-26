@@ -10,7 +10,7 @@ public class HomeViewModel extends ViewModel {
 
     public HomeViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is home fragment");
+        mText.setValue("Welcome to the Weather App!\n Data from api.openweathermap.org");
     }
 
     public LiveData<String> getText() {
