@@ -1,31 +1,10 @@
 package com.example.weatherapp.networking;
 
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
 public class WeatherAPI {
-    public static final String BASE_URL = "https://api.openweathermap.org";
-    private static Retrofit retrofit = null;
-    public static final String API_KEY = "4a4697bee1747a834c2d866b2179dc6f";
-
-    private static OkHttpClient buildClient() {
-        return new OkHttpClient
-                .Builder()
-                .addInterceptor(new HttpLoggingInterceptor()
-                        .setLevel(HttpLoggingInterceptor.Level.BODY))
-                .build();
-    }
-
-    public static Retrofit getClient() {
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .client(buildClient())
-                    .build();
-        }
-        return retrofit;
-    }
+    public static final String BASEURL = "http://api.openweathermap.org/data/2.5/";
+    public static final String CurrentWeather = "weather?";
+    public static final String ListWeather = "forecast?";
+    public static final String Daily = "forecast/daily?";
+    public static final String UnitsAppid = "&units=metric&appid=4a4697bee1747a834c2d866b2179dc6f";
+    public static final String UnitsAppidDaily = "&units=metric&cnt=15&appid{YOUR APP ID}=4a4697bee1747a834c2d866b2179dc6f";
 }

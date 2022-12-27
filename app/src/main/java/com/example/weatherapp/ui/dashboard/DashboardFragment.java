@@ -1,5 +1,6 @@
 package com.example.weatherapp.ui.dashboard;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,23 +10,25 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.example.weatherapp.databinding.FragmentDashboardBinding;
 import com.example.weatherapp.model.Response;
 import com.example.weatherapp.model.Weather;
 import com.example.weatherapp.networking.WeatherAPI;
-import com.example.weatherapp.networking.WeatherAPICalls;
+
+import org.json.JSONObject;
 
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
 
 public class DashboardFragment extends Fragment {
 
     private FragmentDashboardBinding binding;
-    private WeatherAPICalls apiInterface;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -33,28 +36,10 @@ public class DashboardFragment extends Fragment {
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         EditText editText = binding.inputDashboard;
-
-        apiInterface = WeatherAPI.getClient().create(WeatherAPICalls.class);
-
         final Button button = binding.searchButtonDashboard;
         button.setOnClickListener(view -> {
             if (validate(String.valueOf(editText.getText()))) {
-                Call<Response> call = apiInterface.getWeatherByCityName(String.valueOf(editText.getText()), WeatherAPI.API_KEY);
-                call.enqueue(new Callback<Response>() {
-                    @Override
-                    public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
-                        Response apiResponse = response.body();
-                        List<Weather> weather = apiResponse.getWeather();
-                        String weatherDetails = weather.get(0).getDescription();
-                        Toast.makeText(getContext(), weatherDetails, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onFailure(Call<Response> call, Throwable t) {
-                        Toast.makeText(getContext(), "error", Toast.LENGTH_SHORT).show();
-                        call.cancel();
-                    }
-                });
+                getWeather();
             }
 
         });
@@ -73,5 +58,24 @@ public class DashboardFragment extends Fragment {
             Toast.makeText(getActivity().getApplicationContext(), "You did not enter a city name", Toast.LENGTH_SHORT).show();
             return false;
         } else return true;
+    }
+
+    private void getWeather() {
+        AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.CurrentWeather + "q=London,uk&units=metric&appid=4a4697bee1747a834c2d866b2179dc6f")
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Toast.makeText(getActivity().getApplicationContext(), "yes", Toast.LENGTH_SHORT).show();
+
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Toast.makeText(getActivity().getApplicationContext(), "222", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
     }
 }
