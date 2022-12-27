@@ -1,9 +1,9 @@
-package com.example.weatherapp;
+package com.example.weatherapp.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Main {
+public class MainModel {
 
     @SerializedName("temp")
     @Expose

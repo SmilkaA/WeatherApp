@@ -20,7 +20,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/time"
+                android:id="@+id/time_forecast"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -30,13 +30,13 @@
                 android:textStyle="bold" />
 
             <ImageView
-                android:id="@+id/image_details"
+                android:id="@+id/image_forecast"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_margin="10dp"/>
 
             <TextView
-                android:id="@+id/weather_main_details"
+                android:id="@+id/weather_main_forecast"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -46,7 +46,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/wind_speed"
+                android:id="@+id/wind_speed_forecast"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -55,7 +55,7 @@
                 android:textColor="@color/white"/>
 
             <TextView
-                android:id="@+id/humidity"
+                android:id="@+id/humidity_forecast"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

@@ -2,7 +2,7 @@ package com.example.weatherapp.model;
 
 import java.util.List;
 
-import com.example.weatherapp.Main;
+import com.example.weatherapp.model.MainModel;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -19,7 +19,7 @@ public class Response {
     private String base;
     @SerializedName("main")
     @Expose
-    private Main main;
+    private MainModel main;
     @SerializedName("visibility")
     @Expose
     private Integer visibility;
@@ -72,11 +72,11 @@ public class Response {
         this.base = base;
     }
 
-    public Main getMain() {
+    public MainModel getMain() {
         return main;
     }
 
-    public void setMain(Main main) {
+    public void setMain(MainModel main) {
         this.main = main;
     }
 
