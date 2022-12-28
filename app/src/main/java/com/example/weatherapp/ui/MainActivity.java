@@ -13,6 +13,7 @@ import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
+import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
 import com.example.weatherapp.model.Coord;
 import com.example.weatherapp.model.MainModel;
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView temperature, weather_main, date, windSpeed, humidity, tempFeelsLike;
     private EditText input;
+    private ImageView weatherPicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +89,11 @@ public class MainActivity extends AppCompatActivity {
 
                                 windSpeed = findViewById(R.id.wind_speed);
                                 windSpeed.setText(windSpeed.getText() + wind.getSpeed().toString());
+
+                                weatherPicture = findViewById(R.id.weather_image);
+                                Glide.with(getApplicationContext())
+                                        .load(WeatherAPI.IMAGEURL + weather.getIcon() + WeatherAPI.ImageCode)
+                                        .into(weatherPicture);
 
                             } catch (JSONException e) {
                                 Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_SHORT).show();
