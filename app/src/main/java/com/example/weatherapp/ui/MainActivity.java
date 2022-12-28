@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
 import com.example.weatherapp.model.Coord;
 import com.example.weatherapp.model.MainModel;
+import com.example.weatherapp.model.Response;
 import com.example.weatherapp.model.Weather;
 import com.example.weatherapp.model.Wind;
 import com.example.weatherapp.networking.GpsTracker;
@@ -63,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
             hideVirtualKeyboard();
             getCurrentWeather(String.valueOf(input.getText()));
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getCurrentWeather("");
     }
 
     private void getCurrentWeather(String cityName) {
@@ -112,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     private void getForecast() {
     }
 
+    @SuppressLint("SetTextI18n")
     public void getCurrentWeatherOnResponse(JSONObject response) {
         Gson gson = new Gson();
         Coord coord = null;
@@ -129,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
             temperature.setText(mainModel.getTemp() + "°C");
 
             weather_main = findViewById(R.id.weather_main);
-            weather_main.setText(weather.getMain());
+            weather_main.setText(response.get("name") + " : " + weather.getMain());
 
             date = findViewById(R.id.date);
             date.setText(getToday());
