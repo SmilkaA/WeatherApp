@@ -11,6 +11,7 @@
         android:layout_height="0dp"
         android:layout_margin="10dp"
         android:layout_weight="1"
+        app:cardBackgroundColor="#0090FF"
         app:cardCornerRadius="20dp">
 
         <LinearLayout
@@ -25,15 +26,15 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Time"
-                android:textColor="@color/white"
                 android:textAlignment="center"
+                android:textColor="@color/white"
                 android:textStyle="bold" />
 
             <ImageView
                 android:id="@+id/image_forecast"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:layout_margin="10dp"/>
+                android:layout_margin="10dp" />
 
             <TextView
                 android:id="@+id/weather_main_forecast"
@@ -41,8 +42,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Clear"
-                android:textColor="@color/white"
                 android:textAlignment="center"
+                android:textColor="@color/white"
                 android:textStyle="bold" />
 
             <TextView
@@ -52,7 +53,8 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="5dp"
                 android:text="Wind Speed: "
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:textSize="10dp"/>
 
             <TextView
                 android:id="@+id/humidity_forecast"
@@ -60,7 +62,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Humidity: "
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:textSize="10dp" />
 
         </LinearLayout>
 

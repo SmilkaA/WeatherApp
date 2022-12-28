@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
+import com.example.weatherapp.adapter.MainAdapter;
 import com.example.weatherapp.model.Coord;
 import com.example.weatherapp.model.MainModel;
 import com.example.weatherapp.model.Response;
@@ -27,6 +29,8 @@ import com.google.gson.Gson;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText input;
     private ImageView weatherPicture;
     private GpsTracker gpsTracker;
+    private MainAdapter adapter;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
