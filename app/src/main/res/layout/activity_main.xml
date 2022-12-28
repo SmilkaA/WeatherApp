@@ -42,7 +42,6 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginTop="10dp"
-                        android:text="0C"
                         android:textColor="@color/white"
                         android:textSize="60sp"
                         android:textStyle="bold" />
@@ -52,8 +51,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginTop="30dp"
-                        android:text="Clear"
+                        android:layout_marginTop="20dp"
                         android:textColor="@color/white"
                         android:textSize="24sp"
                         android:textStyle="bold" />
@@ -76,7 +74,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:text="0D"
                                 android:textColor="@color/white"
                                 android:textSize="18sp" />
 
@@ -86,7 +83,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_marginTop="20dp"
-                                android:text="Wind Speed: "
                                 android:textColor="@color/white"
                                 android:textSize="14sp" />
 
@@ -96,7 +92,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_marginTop="5dp"
-                                android:text="Humidity: "
                                 android:textColor="@color/white"
                                 android:textSize="14sp" />
 
@@ -106,7 +101,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_marginTop="5dp"
-                                android:text="Temperature feels like: "
                                 android:textColor="@color/white"
                                 android:textSize="14sp" />
                         </LinearLayout>
@@ -129,7 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
-                android:text="Hourly forecast"
+                android:text="@string/hourly_forecast"
                 android:textColor="#304FFE"
                 android:textSize="24sp"
                 android:textStyle="bold" />

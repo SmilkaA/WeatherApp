@@ -2,7 +2,6 @@ package com.example.weatherapp.ui;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -82,13 +82,13 @@ public class MainActivity extends AppCompatActivity {
                                 date.setText(getToday());
 
                                 humidity = findViewById(R.id.humidity);
-                                humidity.setText(humidity.getText() + String.valueOf(mainModel.getHumidity()));
+                                humidity.setText("Humidity: " + mainModel.getHumidity());
 
                                 tempFeelsLike = findViewById(R.id.Temp_feels_like);
-                                tempFeelsLike.setText(tempFeelsLike.getText() + String.valueOf(mainModel.getFeelsLike()));
+                                tempFeelsLike.setText("Temperature feelings: " + new DecimalFormat("##.##").format(mainModel.getFeelsLike()));
 
                                 windSpeed = findViewById(R.id.wind_speed);
-                                windSpeed.setText(windSpeed.getText() + wind.getSpeed().toString());
+                                windSpeed.setText("Wind speed: " + wind.getSpeed().toString());
 
                                 weatherPicture = findViewById(R.id.weather_image);
                                 Glide.with(getApplicationContext())
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 }
