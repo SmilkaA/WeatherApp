@@ -2,7 +2,10 @@ package com.example.weatherapp.ui;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,7 +16,6 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.example.weatherapp.R;
 import com.example.weatherapp.model.Coord;
 import com.example.weatherapp.model.MainModel;
-import com.example.weatherapp.model.Response;
 import com.example.weatherapp.model.Weather;
 import com.example.weatherapp.model.Wind;
 import com.example.weatherapp.networking.WeatherAPI;
@@ -37,13 +39,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        input = findViewById(R.id.search_text);
 
-        getCurrentWeather(String.valueOf("lviv"));
+        input = findViewById(R.id.search_text);
+        ImageView imageView = findViewById(R.id.image_search);
+        imageView.setOnClickListener(view -> {
+            hideVirtualKeyboard();
+            getCurrentWeather(String.valueOf(input.getText()));
+        });
     }
 
     private void getCurrentWeather(String cityName) {
-       // if (validate(String.valueOf(input.getText()))) {
+        if (validate(String.valueOf(input.getText()))) {
             AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.CurrentWeather + "q=" + cityName + WeatherAPI.UnitsAppid)
                     .setPriority(Priority.MEDIUM)
                     .build()
@@ -52,12 +58,11 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(JSONObject response) {
 
-                            Response weatherResponse = new Response();
                             Gson gson = new Gson();
                             Coord coord = null;
-                            Weather weather = null;
-                            MainModel mainModel = null;
-                            Wind wind = null;
+                            Weather weather;
+                            MainModel mainModel;
+                            Wind wind;
 
                             try {
                                 coord = gson.fromJson(response.getJSONObject("coord").toString(), Coord.class);
@@ -96,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         }
-    //}
+    }
 
     private void getForecast() {
     }
@@ -112,5 +117,13 @@ public class MainActivity extends AppCompatActivity {
         Date date = Calendar.getInstance().getTime();
         @SuppressLint("SimpleDateFormat") String formatedDate = new SimpleDateFormat("dd MMM yyyy").format(date);
         return formatedDate;
+    }
+
+    private void hideVirtualKeyboard() {
+        try {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        } catch (Exception e) {
+        }
     }
 }
