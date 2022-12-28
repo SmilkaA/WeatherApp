@@ -36,7 +36,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull MainAdapter.MyViewHolder holder, int position) {
 
-        holder.humidity.setText(items.get(position).getHumidity());
+        holder.humidity.setText(String.valueOf(items.get(position).getHumidity()));
     }
 
     @Override
