@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                     .getAsJSONObject(new JSONObjectRequestListener() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            getCurrentWeatherOnResponse(response);
+                            getForecastOnResponse(response);
                         }
 
                         @Override
