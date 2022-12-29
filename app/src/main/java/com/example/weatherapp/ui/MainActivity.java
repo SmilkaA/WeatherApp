@@ -1,7 +1,10 @@
 package com.example.weatherapp.ui;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -26,6 +29,8 @@ import com.google.gson.Gson;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -51,16 +56,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        checkPermissions();
+        createNotificationChanel();
         initRecyclerView();
-        try {
-            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                    android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{
-                        android.Manifest.permission.ACCESS_FINE_LOCATION}, 101);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         input = findViewById(R.id.search_text);
         ImageView imageView = findViewById(R.id.image_search);
@@ -78,12 +76,32 @@ public class MainActivity extends AppCompatActivity {
         getForecast("");
     }
 
+    private void checkPermissions() {
+        try {
+            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                    android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{
+                        android.Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initRecyclerView() {
         recyclerView = findViewById(R.id.weather_forecast_list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         layoutManager.setInitialPrefetchItemCount(12);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
+    }
+
+    private void createNotificationChanel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("Weather channel", "Weather", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
     }
 
     private void getCurrentWeather(String cityName) {
@@ -204,6 +222,8 @@ public class MainActivity extends AppCompatActivity {
             Glide.with(getApplicationContext())
                     .load(WeatherAPI.IMAGEURL + weather.getIcon() + WeatherAPI.ImageCode)
                     .into(weatherPicture);
+
+            createNotification(weather, mainModel);
         } catch (JSONException ignored) {
         }
     }
@@ -236,5 +256,17 @@ public class MainActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         } catch (Exception ignored) {
         }
+    }
+
+
+    private void createNotification(Weather weather, MainModel mainModel) {
+        NotificationCompat.Builder notificationComBuilder = new NotificationCompat.Builder(this, "Weather channel");
+        notificationComBuilder.setContentTitle("It`s " + weather.getDescription() + " in city");
+        notificationComBuilder.setContentText("Temperature: " + mainModel.getTemp()
+                + ", but it feels like: " + mainModel.getFeelsLike());
+        notificationComBuilder.setSmallIcon(R.drawable.ic_launcher_foreground);
+
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        managerCompat.notify(1, notificationComBuilder.build());
     }
 }
