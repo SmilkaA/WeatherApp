@@ -1,5 +1,6 @@
 package com.example.weatherapp.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,18 +11,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.weatherapp.model.MainModel;
+import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
+import com.example.weatherapp.model.Response;
+import com.example.weatherapp.networking.WeatherAPI;
 
 import java.util.List;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> {
 
-    List<MainModel> items;
+    List<Response> weatherResponse;
     Context context;
 
-    public MainAdapter(List<MainModel> items, Context context) {
-        this.items = items;
+    public MainAdapter(List<Response> items, Context context) {
+        this.weatherResponse = items;
         this.context = context;
     }
 
@@ -32,15 +35,22 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> 
         return new MyViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MainAdapter.MyViewHolder holder, int position) {
-
-        holder.humidity.setText(String.valueOf(items.get(position).getHumidity()));
+        Response currentWeather = weatherResponse.get(position);
+        holder.time.setText(currentWeather.getDt());
+        Glide.with(context)
+                .load(WeatherAPI.IMAGEURL + currentWeather.getWeather().get(0).getIcon() + WeatherAPI.ImageCode)
+                .into(holder.imageDetails);
+        holder.weatherState.setText(currentWeather.getMain().getTemp() + "°C");
+        holder.windSpeed.setText("Wind speed: " + currentWeather.getWind().getSpeed());
+        holder.humidity.setText("Humidity: " + currentWeather.getMain().getHumidity());
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return weatherResponse.size();
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
@@ -56,7 +66,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> 
 
             time = itemView.findViewById(R.id.time_forecast);
             imageDetails = itemView.findViewById(R.id.image_forecast);
-            weatherState = itemView.findViewById(R.id.weather_main_forecast);
+            weatherState = itemView.findViewById(R.id.temperature_forecast);
             windSpeed = itemView.findViewById(R.id.wind_speed_forecast);
             humidity = itemView.findViewById(R.id.humidity_forecast);
         }

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,7 +16,6 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
 import com.example.weatherapp.adapter.MainAdapter;
-import com.example.weatherapp.model.Coord;
 import com.example.weatherapp.model.MainModel;
 import com.example.weatherapp.model.Response;
 import com.example.weatherapp.model.Weather;
@@ -32,21 +30,20 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView temperature, weather_main, date, windSpeed, humidity, tempFeelsLike;
     private EditText input;
-    private ImageView weatherPicture;
-    private GpsTracker gpsTracker;
-    private MainAdapter adapter;
     private RecyclerView recyclerView;
 
     @Override
@@ -54,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initRecyclerView();
         try {
             if (ContextCompat.checkSelfPermission(getApplicationContext(),
                     android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -69,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         imageView.setOnClickListener(view -> {
             hideVirtualKeyboard();
             getCurrentWeather(String.valueOf(input.getText()));
+            getForecast(String.valueOf(input.getText()));
         });
     }
 
@@ -76,6 +75,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         getCurrentWeather("");
+        getForecast("");
+    }
+
+    private void initRecyclerView() {
+        recyclerView = findViewById(R.id.weather_forecast_list);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        layoutManager.setInitialPrefetchItemCount(12);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(layoutManager);
     }
 
     private void getCurrentWeather(String cityName) {
@@ -84,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
                     .setPriority(Priority.MEDIUM)
                     .build()
                     .getAsJSONObject(new JSONObjectRequestListener() {
-                        @SuppressLint("SetTextI18n")
                         @Override
                         public void onResponse(JSONObject response) {
                             getCurrentWeatherOnResponse(response);
@@ -96,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         } else {
-            gpsTracker = new GpsTracker(MainActivity.this);
+            GpsTracker gpsTracker = new GpsTracker(MainActivity.this);
             double latitude = 0, longitude = 0;
             if (gpsTracker.canGetLocation()) {
                 latitude = gpsTracker.getLatitude();
@@ -108,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
                     .setPriority(Priority.MEDIUM)
                     .build()
                     .getAsJSONObject(new JSONObjectRequestListener() {
-                        @SuppressLint("SetTextI18n")
                         @Override
                         public void onResponse(JSONObject response) {
                             getCurrentWeatherOnResponse(response);
@@ -122,55 +128,106 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getForecast() {
+    private void getForecast(String cityName) {
+        if (!String.valueOf(input.getText()).matches("")) {
+            AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.ListWeather + "q=" + cityName + WeatherAPI.UnitsAppid)
+                    .setPriority(Priority.MEDIUM)
+                    .build()
+                    .getAsJSONObject(new JSONObjectRequestListener() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            getCurrentWeatherOnResponse(response);
+                        }
+
+                        @Override
+                        public void onError(ANError anError) {
+                            Toast.makeText(getApplicationContext(), "Incorrect city name!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+        } else {
+            GpsTracker gpsTracker = new GpsTracker(MainActivity.this);
+            double latitude = 0, longitude = 0;
+            if (gpsTracker.canGetLocation()) {
+                latitude = gpsTracker.getLatitude();
+                longitude = gpsTracker.getLongitude();
+            } else {
+                gpsTracker.showSettingsAlert();
+            }
+            AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.ListWeather + "lat=" + latitude + "&lon=" + longitude + WeatherAPI.UnitsAppid)
+                    .setPriority(Priority.MEDIUM)
+                    .build()
+                    .getAsJSONObject(new JSONObjectRequestListener() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            getForecastOnResponse(response);
+                        }
+
+                        @Override
+                        public void onError(ANError anError) {
+                            Toast.makeText(getApplicationContext(), "Incorrect city name!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+        }
     }
 
     @SuppressLint("SetTextI18n")
     public void getCurrentWeatherOnResponse(JSONObject response) {
         Gson gson = new Gson();
-        Coord coord = null;
         Weather weather;
         MainModel mainModel;
         Wind wind;
 
         try {
-            coord = gson.fromJson(response.getJSONObject("coord").toString(), Coord.class);
             weather = gson.fromJson(response.getJSONArray("weather").getJSONObject(0).toString(), Weather.class);
             mainModel = gson.fromJson(response.getJSONObject("main").toString(), MainModel.class);
             wind = gson.fromJson(response.getJSONObject("wind").toString(), Wind.class);
 
-            temperature = findViewById(R.id.temperature);
+            TextView temperature = findViewById(R.id.temperature);
             temperature.setText(mainModel.getTemp() + "°C");
 
-            weather_main = findViewById(R.id.weather_main);
+            TextView weather_main = findViewById(R.id.weather_main);
             weather_main.setText(response.get("name") + " : " + weather.getMain());
 
-            date = findViewById(R.id.date);
+            TextView date = findViewById(R.id.date);
             date.setText(getToday());
 
-            humidity = findViewById(R.id.humidity);
+            TextView humidity = findViewById(R.id.humidity);
             humidity.setText("Humidity: " + mainModel.getHumidity());
 
-            tempFeelsLike = findViewById(R.id.Temp_feels_like);
+            TextView tempFeelsLike = findViewById(R.id.Temp_feels_like);
             tempFeelsLike.setText("Temperature feelings: " + new DecimalFormat("##.##").format(mainModel.getFeelsLike()));
 
-            windSpeed = findViewById(R.id.wind_speed);
+            TextView windSpeed = findViewById(R.id.wind_speed);
             windSpeed.setText("Wind speed: " + wind.getSpeed().toString());
 
-            weatherPicture = findViewById(R.id.weather_image);
+            ImageView weatherPicture = findViewById(R.id.weather_image);
             Glide.with(getApplicationContext())
                     .load(WeatherAPI.IMAGEURL + weather.getIcon() + WeatherAPI.ImageCode)
                     .into(weatherPicture);
-        } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_SHORT).show();
+        } catch (JSONException ignored) {
         }
-        Toast.makeText(getApplicationContext(), "Here is your weather!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void getForecastOnResponse(JSONObject response) {
+        Gson gson = new Gson();
+        List<Response> weatherResponse = new ArrayList<>();
+
+        try {
+            JSONArray jsonArray = response.getJSONArray("list");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                weatherResponse.add(gson.fromJson(jsonArray.getJSONObject(i).toString(), Response.class));
+            }
+            MainAdapter adapter = new MainAdapter(weatherResponse, this);
+            recyclerView.setAdapter(adapter);
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), "Error loading hourly forecast", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String getToday() {
         Date date = Calendar.getInstance().getTime();
-        @SuppressLint("SimpleDateFormat") String formatedDate = new SimpleDateFormat("dd MMM yyyy").format(date);
-        return formatedDate;
+        @SuppressLint("SimpleDateFormat") String formattedDate = new SimpleDateFormat("dd MMM yyyy").format(date);
+        return formattedDate;
     }
 
     private void hideVirtualKeyboard() {

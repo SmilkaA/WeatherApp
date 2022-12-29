@@ -29,9 +29,9 @@ public class Response {
     @SerializedName("clouds")
     @Expose
     private Clouds clouds;
-    @SerializedName("dt")
+    @SerializedName("dt_txt")
     @Expose
-    private Integer dt;
+    private String dt;
     @SerializedName("sys")
     @Expose
     private Sys sys;
@@ -104,11 +104,11 @@ public class Response {
         this.clouds = clouds;
     }
 
-    public Integer getDt() {
-        return dt;
+    public String getDt() {
+        return dt.substring(5, 10) + " " + dt.substring(11, 13) + ":00";
     }
 
-    public void setDt(Integer dt) {
+    public void setDt(String dt) {
         this.dt = dt;
     }
 
