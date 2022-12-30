@@ -3,7 +3,10 @@ package com.example.weatherapp.ui;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
@@ -26,7 +29,9 @@ import com.example.weatherapp.model.Wind;
 import com.example.weatherapp.networking.GpsTracker;
 import com.example.weatherapp.networking.WeatherAPI;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -39,23 +44,31 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+    private TextView temperature, weather_main, date, humidity, tempFeelsLike, windSpeed;
     private EditText input;
     private RecyclerView recyclerView;
+    private String cityName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        if (savedInstanceState != null) {
+//            input.setText(savedInstanceState.getString("cityName"));
+//            cityName = String.valueOf(input.getText());
+//        }
         checkPermissions();
         createNotificationChanel();
         initRecyclerView();
@@ -70,10 +83,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        getCurrentWeather("");
-        getForecast("");
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.weatherapp.preferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("cityName", input.getText().toString());
+        editor.apply();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences sharedPreferences = getSharedPreferences("com.example.weatherapp.preferences", Context.MODE_PRIVATE);
+        cityName = sharedPreferences.getString("cityName", "");
+        input.setText(cityName);
+        getCurrentWeather(input.getText().toString());
+        getForecast(input.getText().toString());
     }
 
     private void checkPermissions() {
@@ -200,22 +225,22 @@ public class MainActivity extends AppCompatActivity {
             mainModel = gson.fromJson(response.getJSONObject("main").toString(), MainModel.class);
             wind = gson.fromJson(response.getJSONObject("wind").toString(), Wind.class);
 
-            TextView temperature = findViewById(R.id.temperature);
+            temperature = findViewById(R.id.temperature);
             temperature.setText(mainModel.getTemp() + "°C");
 
-            TextView weather_main = findViewById(R.id.weather_main);
+            weather_main = findViewById(R.id.weather_main);
             weather_main.setText(response.get("name") + " : " + weather.getMain());
 
-            TextView date = findViewById(R.id.date);
+            date = findViewById(R.id.date);
             date.setText(getToday());
 
-            TextView humidity = findViewById(R.id.humidity);
+            humidity = findViewById(R.id.humidity);
             humidity.setText("Humidity: " + mainModel.getHumidity());
 
-            TextView tempFeelsLike = findViewById(R.id.Temp_feels_like);
+            tempFeelsLike = findViewById(R.id.Temp_feels_like);
             tempFeelsLike.setText("Temperature feelings: " + new DecimalFormat("##.##").format(mainModel.getFeelsLike()));
 
-            TextView windSpeed = findViewById(R.id.wind_speed);
+            windSpeed = findViewById(R.id.wind_speed);
             windSpeed.setText("Wind speed: " + wind.getSpeed().toString());
 
             ImageView weatherPicture = findViewById(R.id.weather_image);
