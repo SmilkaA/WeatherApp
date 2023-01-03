@@ -3,7 +3,9 @@ package com.example.weatherapp.ui;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -280,6 +282,18 @@ public class MainActivity extends AppCompatActivity {
         notificationComBuilder.setContentText("Temperature: " + mainModel.getTemp()
                 + ", but it feels like: " + mainModel.getFeelsLike());
         notificationComBuilder.setSmallIcon(R.drawable.ic_launcher_foreground);
+
+        Intent notifyIntent = new Intent(this, MainActivity.class);
+        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent notifyPendingIntent = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            notifyPendingIntent = PendingIntent.getActivity(
+                    this, 0, notifyIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+        }
+        notificationComBuilder.setContentIntent(notifyPendingIntent);
 
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
         managerCompat.notify(1, notificationComBuilder.build());
