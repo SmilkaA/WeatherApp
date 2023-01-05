@@ -135,12 +135,13 @@
                 android:layout_height="match_parent" />
 
             <Button
+                android:id="@+id/map_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="15dp"
                 android:text="@string/open_map"
-                app:cardBackgroundColor="#0090FF" />
+                app:cardBackgroundColor="#0090FF"/>
 
         </LinearLayout>
 

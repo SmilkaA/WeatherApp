@@ -10,7 +10,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -71,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
             hideVirtualKeyboard();
             getCurrentWeather(String.valueOf(input.getText()));
             getForecast(String.valueOf(input.getText()));
+        });
+
+        Button map = findViewById(R.id.map_button);
+        map.setOnClickListener(view -> {
+            startActivity(new Intent(this, MapsActivity.class));
         });
     }
 
