@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,6 +22,7 @@ import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
+import com.example.weatherapp.MapsActivity;
 import com.example.weatherapp.R;
 import com.example.weatherapp.adapter.MainAdapter;
 import com.example.weatherapp.model.MainModel;
@@ -76,9 +76,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button map = findViewById(R.id.map_button);
-        map.setOnClickListener(view -> {
-            startActivity(new Intent(this, MapsActivity.class));
-        });
+        map.setOnClickListener(view -> startActivity(new Intent(this, MapsActivity.class)));
     }
 
     @Override
