@@ -7,4 +7,5 @@
     <string name="hourly_forecast">Hourly forecast</string>
     <string name="open_map">Open map</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="map_click_hint_text">Click on map to see selected city weather</string>
 </resources>
