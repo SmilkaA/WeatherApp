@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -11,6 +12,7 @@ import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
+import com.bumptech.glide.Glide;
 import com.example.weatherapp.databinding.ActivityMapsBinding;
 import com.example.weatherapp.model.Response;
 import com.example.weatherapp.networking.WeatherAPI;
@@ -63,10 +65,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                         String description = "It`s " + weatherResponse.getWeather().get(0).getDescription()
                                 + " and " + weatherResponse.getMain().getTemp()
-                                + "°C in " + weatherResponse.getName();
+                                + "°C in " + weatherResponse.getName()
+                                + ", but feels like " + weatherResponse.getMain().getFeelsLike();
 
                         TextView textView = findViewById(R.id.weather_details_in_fragment);
                         textView.setText(description);
+
+                        ImageView weatherPicture = findViewById(R.id.image_weather_details_in_fragment);
+                        Glide.with(getApplicationContext())
+                                .load(WeatherAPI.IMAGEURL + weatherResponse.getWeather().get(0).getIcon()
+                                        + WeatherAPI.ImageCode)
+                                .into(weatherPicture);
                     }
 
                     @Override
