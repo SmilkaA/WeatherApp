@@ -30,6 +30,7 @@ import com.example.weatherapp.model.Weather;
 import com.example.weatherapp.model.Wind;
 import com.example.weatherapp.networking.GpsTracker;
 import com.example.weatherapp.networking.WeatherAPI;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -112,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initComponents() {
+        gson = new Gson();
         temperature = findViewById(R.id.temperature);
         weather_main = findViewById(R.id.weather_main);
         date = findViewById(R.id.date);
@@ -165,8 +167,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void getCurrentWeatherByLatAndLon(Double[] latLon) {
-        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.CURRENT_WEATHER + WeatherAPI.LAT + latLon[0] + WeatherAPI.LON + latLon[1] + WeatherAPI.UNITS_APPID)
+    private void getCurrentWeatherByLatAndLon(LatLng latLon) {
+        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.CURRENT_WEATHER + WeatherAPI.LAT + latLon.latitude + WeatherAPI.LON + latLon.longitude + WeatherAPI.UNITS_APPID)
                 .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
@@ -207,8 +209,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void getForecastByLatAndLon(Double[] latLon) {
-        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.FORECAST_WEATHER + WeatherAPI.LAT + latLon[0] + WeatherAPI.LON + latLon[1] + WeatherAPI.UNITS_APPID)
+    private void getForecastByLatAndLon(LatLng latLon) {
+        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.FORECAST_WEATHER + WeatherAPI.LAT + latLon.latitude + WeatherAPI.LON + latLon.longitude + WeatherAPI.UNITS_APPID)
                 .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
@@ -224,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private Double[] getLatAndLonFromGPS() {
+    private LatLng getLatAndLonFromGPS() {
         GpsTracker gpsTracker = new GpsTracker(MainActivity.this);
         double latitude = 0, longitude = 0;
         if (gpsTracker.canGetLocation()) {
@@ -233,12 +235,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             gpsTracker.showSettingsAlert();
         }
-        return new Double[]{latitude, longitude};
+        return new LatLng(latitude, longitude);
     }
 
     @SuppressLint("SetTextI18n")
     public void getCurrentWeatherOnResponse(JSONObject response) {
-        gson = new Gson();
         Response weatherResponse = gson.fromJson(response.toString(), Response.class);
         Weather weather = weatherResponse.getWeather().get(0);
         MainModel mainModel = weatherResponse.getMain();
@@ -259,7 +260,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getForecastOnResponse(JSONObject response) {
-        gson = new Gson();
         List<Response> weatherResponse = new ArrayList<>();
 
         try {
