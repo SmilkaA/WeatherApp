@@ -10,11 +10,11 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MapsActivity" />
+        tools:context=".ui.MapsActivity" />
 
     <fragment
         android:id="@+id/weather_details_map_fragment"
-        class="com.example.weatherapp.MapDetailsFragment"
+        class="com.example.weatherapp.ui.MapDetailsFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:ignore="Instantiatable" />

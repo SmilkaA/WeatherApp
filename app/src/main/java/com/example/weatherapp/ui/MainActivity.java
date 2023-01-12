@@ -22,7 +22,6 @@ import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
-import com.example.weatherapp.MapsActivity;
 import com.example.weatherapp.R;
 import com.example.weatherapp.adapter.MainAdapter;
 import com.example.weatherapp.model.MainModel;
@@ -42,7 +41,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
@@ -54,9 +52,14 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private TextView temperature, weather_main, date, humidity, tempFeelsLike, windSpeed;
+    private ImageView weatherPicture, imageView;
     private EditText input;
+    private Button mapButton;
     private RecyclerView recyclerView;
     private final String PREFERENCES_PATH = "com.example.weatherapp.preferences";
+    private final String PREFERENCES_KEY = "cityName";
+    private Gson gson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,18 +68,16 @@ public class MainActivity extends AppCompatActivity {
 
         checkPermissions();
         createNotificationChanel();
+        initComponents();
         initRecyclerView();
 
-        input = findViewById(R.id.search_text);
-        ImageView imageView = findViewById(R.id.image_search);
         imageView.setOnClickListener(view -> {
             hideVirtualKeyboard();
             getCurrentWeather(String.valueOf(input.getText()));
             getForecast(String.valueOf(input.getText()));
         });
 
-        Button map = findViewById(R.id.map_button);
-        map.setOnClickListener(view -> startActivity(new Intent(this, MapsActivity.class)));
+        mapButton.setOnClickListener(view -> startActivity(new Intent(this, MapsActivity.class)));
     }
 
     @Override
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_PATH, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("cityName", input.getText().toString());
+        editor.putString(PREFERENCES_KEY, input.getText().toString());
         editor.apply();
     }
 
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_PATH, Context.MODE_PRIVATE);
-        String cityName = sharedPreferences.getString("cityName", "");
+        String cityName = sharedPreferences.getString(PREFERENCES_KEY, "");
         input.setText(cityName);
         getCurrentWeather(input.getText().toString());
         getForecast(input.getText().toString());
@@ -108,6 +109,19 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void initComponents() {
+        temperature = findViewById(R.id.temperature);
+        weather_main = findViewById(R.id.weather_main);
+        date = findViewById(R.id.date);
+        humidity = findViewById(R.id.humidity);
+        tempFeelsLike = findViewById(R.id.Temp_feels_like);
+        windSpeed = findViewById(R.id.wind_speed);
+        weatherPicture = findViewById(R.id.weather_image);
+        input = findViewById(R.id.search_text);
+        imageView = findViewById(R.id.image_search);
+        mapButton = findViewById(R.id.map_button);
     }
 
     private void initRecyclerView() {
@@ -128,130 +142,124 @@ public class MainActivity extends AppCompatActivity {
 
     private void getCurrentWeather(String cityName) {
         if (!String.valueOf(input.getText()).matches("")) {
-            AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.CurrentWeather + "q=" + cityName + WeatherAPI.UnitsAppid)
-                    .setPriority(Priority.MEDIUM)
-                    .build()
-                    .getAsJSONObject(new JSONObjectRequestListener() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            getCurrentWeatherOnResponse(response);
-                        }
-
-                        @Override
-                        public void onError(ANError anError) {
-                            Toast.makeText(getApplicationContext(), "Incorrect city name!", Toast.LENGTH_LONG).show();
-                        }
-                    });
+            getCurrentWeatherByCityName(cityName);
         } else {
-            GpsTracker gpsTracker = new GpsTracker(MainActivity.this);
-            double latitude = 0, longitude = 0;
-            if (gpsTracker.canGetLocation()) {
-                latitude = gpsTracker.getLatitude();
-                longitude = gpsTracker.getLongitude();
-            } else {
-                gpsTracker.showSettingsAlert();
-            }
-            AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.CurrentWeather + "lat=" + latitude + "&lon=" + longitude + WeatherAPI.UnitsAppid)
-                    .setPriority(Priority.MEDIUM)
-                    .build()
-                    .getAsJSONObject(new JSONObjectRequestListener() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            getCurrentWeatherOnResponse(response);
-                        }
-
-                        @Override
-                        public void onError(ANError anError) {
-                            Toast.makeText(getApplicationContext(), "Incorrect city name!", Toast.LENGTH_LONG).show();
-                        }
-                    });
+            getCurrentWeatherByLatAndLon(getLatAndLonFromGPS());
         }
+    }
+
+    private void getCurrentWeatherByCityName(String cityName) {
+        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.CURRENT_WEATHER + WeatherAPI.CITY_NAME + cityName + WeatherAPI.UNITS_APPID)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        getCurrentWeatherOnResponse(response);
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.city_name_error), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void getCurrentWeatherByLatAndLon(Double[] latLon) {
+        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.CURRENT_WEATHER + WeatherAPI.LAT + latLon[0] + WeatherAPI.LON + latLon[1] + WeatherAPI.UNITS_APPID)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        getCurrentWeatherOnResponse(response);
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.city_name_error), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private void getForecast(String cityName) {
         if (!String.valueOf(input.getText()).matches("")) {
-            AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.ListWeather + "q=" + cityName + WeatherAPI.UnitsAppid)
-                    .setPriority(Priority.MEDIUM)
-                    .build()
-                    .getAsJSONObject(new JSONObjectRequestListener() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            getForecastOnResponse(response);
-                        }
-
-                        @Override
-                        public void onError(ANError anError) {
-                            Toast.makeText(getApplicationContext(), "Incorrect city name!", Toast.LENGTH_LONG).show();
-                        }
-                    });
+            getForecastByCityName(cityName);
         } else {
-            GpsTracker gpsTracker = new GpsTracker(MainActivity.this);
-            double latitude = 0, longitude = 0;
-            if (gpsTracker.canGetLocation()) {
-                latitude = gpsTracker.getLatitude();
-                longitude = gpsTracker.getLongitude();
-            } else {
-                gpsTracker.showSettingsAlert();
-            }
-            AndroidNetworking.get(WeatherAPI.BASEURL + WeatherAPI.ListWeather + "lat=" + latitude + "&lon=" + longitude + WeatherAPI.UnitsAppid)
-                    .setPriority(Priority.MEDIUM)
-                    .build()
-                    .getAsJSONObject(new JSONObjectRequestListener() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            getForecastOnResponse(response);
-                        }
-
-                        @Override
-                        public void onError(ANError anError) {
-                            Toast.makeText(getApplicationContext(), "Incorrect city name!", Toast.LENGTH_LONG).show();
-                        }
-                    });
+            getForecastByLatAndLon(getLatAndLonFromGPS());
         }
+    }
+
+    private void getForecastByCityName(String cityName) {
+        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.FORECAST_WEATHER + WeatherAPI.CITY_NAME + cityName + WeatherAPI.UNITS_APPID)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        getForecastOnResponse(response);
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.city_name_error), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void getForecastByLatAndLon(Double[] latLon) {
+        AndroidNetworking.get(WeatherAPI.BASE_URL + WeatherAPI.FORECAST_WEATHER + WeatherAPI.LAT + latLon[0] + WeatherAPI.LON + latLon[1] + WeatherAPI.UNITS_APPID)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        getForecastOnResponse(response);
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.city_name_error), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private Double[] getLatAndLonFromGPS() {
+        GpsTracker gpsTracker = new GpsTracker(MainActivity.this);
+        double latitude = 0, longitude = 0;
+        if (gpsTracker.canGetLocation()) {
+            latitude = gpsTracker.getLatitude();
+            longitude = gpsTracker.getLongitude();
+        } else {
+            gpsTracker.showSettingsAlert();
+        }
+        return new Double[]{latitude, longitude};
     }
 
     @SuppressLint("SetTextI18n")
     public void getCurrentWeatherOnResponse(JSONObject response) {
-        Gson gson = new Gson();
-        Weather weather;
-        MainModel mainModel;
-        Wind wind;
+        gson = new Gson();
+        Response weatherResponse = gson.fromJson(response.toString(), Response.class);
+        Weather weather = weatherResponse.getWeather().get(0);
+        MainModel mainModel = weatherResponse.getMain();
+        Wind wind = weatherResponse.getWind();
 
-        try {
-            weather = gson.fromJson(response.getJSONArray("weather").getJSONObject(0).toString(), Weather.class);
-            mainModel = gson.fromJson(response.getJSONObject("main").toString(), MainModel.class);
-            wind = gson.fromJson(response.getJSONObject("wind").toString(), Wind.class);
+        temperature.setText(mainModel.getTemp() + getString(R.string.celsium));
+        weather_main.setText(weatherResponse.getName() + " : " + weather.getMain());
+        date.setText(getToday());
+        humidity.setText(getString(R.string.humidity) + mainModel.getHumidity());
+        tempFeelsLike.setText(getString(R.string.temp_feel) + new DecimalFormat("##.##").format(mainModel.getFeelsLike()));
+        windSpeed.setText(getString(R.string.wind_speed) + wind.getSpeed().toString());
 
-            TextView temperature = findViewById(R.id.temperature);
-            temperature.setText(mainModel.getTemp() + "°C");
+        Glide.with(getApplicationContext())
+                .load(WeatherAPI.IMAGE_URL + weather.getIcon() + WeatherAPI.IMAGE_CODE)
+                .into(weatherPicture);
 
-            TextView weather_main = findViewById(R.id.weather_main);
-            weather_main.setText(response.get("name") + " : " + weather.getMain());
-
-            TextView date = findViewById(R.id.date);
-            date.setText(getToday());
-
-            TextView humidity = findViewById(R.id.humidity);
-            humidity.setText("Humidity: " + mainModel.getHumidity());
-
-            TextView tempFeelsLike = findViewById(R.id.Temp_feels_like);
-            tempFeelsLike.setText("Temperature feelings: " + new DecimalFormat("##.##").format(mainModel.getFeelsLike()));
-
-            TextView windSpeed = findViewById(R.id.wind_speed);
-            windSpeed.setText("Wind speed: " + wind.getSpeed().toString());
-
-            ImageView weatherPicture = findViewById(R.id.weather_image);
-            Glide.with(getApplicationContext())
-                    .load(WeatherAPI.IMAGEURL + weather.getIcon() + WeatherAPI.ImageCode)
-                    .into(weatherPicture);
-
-            createNotification(weather, mainModel);
-        } catch (JSONException ignored) {
-        }
+        createNotification(weather, mainModel);
     }
 
     private void getForecastOnResponse(JSONObject response) {
-        Gson gson = new Gson();
+        gson = new Gson();
         List<Response> weatherResponse = new ArrayList<>();
 
         try {
@@ -262,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
             MainAdapter adapter = new MainAdapter(weatherResponse, this);
             recyclerView.setAdapter(adapter);
         } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "Error loading hourly forecast", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.loading_error), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -283,9 +291,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void createNotification(Weather weather, MainModel mainModel) {
         NotificationCompat.Builder notificationComBuilder = new NotificationCompat.Builder(this, "Weather channel");
-        notificationComBuilder.setContentTitle("It`s " + weather.getDescription() + " in city");
-        notificationComBuilder.setContentText("Temperature: " + mainModel.getTemp()
-                + ", but it feels like: " + mainModel.getFeelsLike());
+        notificationComBuilder.setContentTitle(getString(R.string.notification_title, weather.getDescription()));
+        notificationComBuilder.setContentText(getString(R.string.notification_text, mainModel.getTemp().toString(), mainModel.getFeelsLike().toString()));
         notificationComBuilder.setSmallIcon(R.drawable.ic_launcher_foreground);
 
         Intent notifyIntent = new Intent(this, MainActivity.class);

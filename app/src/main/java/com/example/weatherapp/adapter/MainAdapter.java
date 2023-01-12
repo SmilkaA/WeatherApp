@@ -16,6 +16,7 @@ import com.example.weatherapp.R;
 import com.example.weatherapp.model.Response;
 import com.example.weatherapp.networking.WeatherAPI;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> {
@@ -41,11 +42,11 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> 
         Response currentWeather = weatherResponse.get(position);
         holder.time.setText(currentWeather.getDt());
         Glide.with(context)
-                .load(WeatherAPI.IMAGEURL + currentWeather.getWeather().get(0).getIcon() + WeatherAPI.ImageCode)
+                .load(WeatherAPI.IMAGE_URL + currentWeather.getWeather().get(0).getIcon() + WeatherAPI.IMAGE_CODE)
                 .into(holder.imageDetails);
-        holder.weatherState.setText(currentWeather.getMain().getTemp() + "°C");
-        holder.windSpeed.setText("Wind speed: " + currentWeather.getWind().getSpeed());
-        holder.humidity.setText("Humidity: " + currentWeather.getMain().getHumidity());
+        holder.weatherState.setText(currentWeather.getMain().getTemp().toString() + holder.weatherState.getText());
+        holder.windSpeed.setText(holder.windSpeed.getText() + currentWeather.getWind().getSpeed().toString());
+        holder.humidity.setText(holder.humidity.getText() + currentWeather.getMain().getHumidity().toString());
     }
 
     @Override
@@ -67,8 +68,11 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> 
             time = itemView.findViewById(R.id.time_forecast);
             imageDetails = itemView.findViewById(R.id.image_forecast);
             weatherState = itemView.findViewById(R.id.temperature_forecast);
+            weatherState.setText(itemView.getResources().getString(R.string.celsium));
             windSpeed = itemView.findViewById(R.id.wind_speed_forecast);
+            windSpeed.setText(itemView.getResources().getString(R.string.wind_speed));
             humidity = itemView.findViewById(R.id.humidity_forecast);
+            humidity.setText(itemView.getResources().getString(R.string.humidity));
         }
     }
 }
