@@ -1,12 +1,11 @@
-package com.example.weatherapp.model;
+package com.example.weatherapp.model.weather;
 
 import java.util.List;
 
-import com.example.weatherapp.model.MainModel;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Response {
+public class WeatherResponse {
 
     @SerializedName("coord")
     @Expose

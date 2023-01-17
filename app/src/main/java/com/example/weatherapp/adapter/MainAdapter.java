@@ -13,17 +13,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
-import com.example.weatherapp.model.Response;
+import com.example.weatherapp.model.weather.WeatherResponse;
 import com.example.weatherapp.networking.WeatherAPI;
 
 import java.util.List;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> {
 
-    List<Response> weatherResponse;
+    List<WeatherResponse> weatherResponse;
     Context context;
 
-    public MainAdapter(List<Response> items, Context context) {
+    public MainAdapter(List<WeatherResponse> items, Context context) {
         this.weatherResponse = items;
         this.context = context;
     }
@@ -38,7 +38,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MyViewHolder> 
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MainAdapter.MyViewHolder holder, int position) {
-        Response currentWeather = weatherResponse.get(position);
+        WeatherResponse currentWeather = weatherResponse.get(position);
         holder.time.setText(currentWeather.getDt());
         Glide.with(context)
                 .load(WeatherAPI.IMAGE_URL + currentWeather.getWeather().get(0).getIcon() + WeatherAPI.IMAGE_CODE)

@@ -24,10 +24,10 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
 import com.example.weatherapp.adapter.MainAdapter;
-import com.example.weatherapp.model.MainModel;
-import com.example.weatherapp.model.Response;
-import com.example.weatherapp.model.Weather;
-import com.example.weatherapp.model.Wind;
+import com.example.weatherapp.model.weather.MainModel;
+import com.example.weatherapp.model.weather.WeatherResponse;
+import com.example.weatherapp.model.weather.Weather;
+import com.example.weatherapp.model.weather.Wind;
 import com.example.weatherapp.networking.GpsTracker;
 import com.example.weatherapp.networking.WeatherAPI;
 import com.google.android.gms.maps.model.LatLng;
@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     public void getCurrentWeatherOnResponse(JSONObject response) {
-        Response weatherResponse = gson.fromJson(response.toString(), Response.class);
+        WeatherResponse weatherResponse = gson.fromJson(response.toString(), WeatherResponse.class);
         Weather weather = weatherResponse.getWeather().get(0);
         MainModel mainModel = weatherResponse.getMain();
         Wind wind = weatherResponse.getWind();
@@ -260,12 +260,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getForecastOnResponse(JSONObject response) {
-        List<Response> weatherResponse = new ArrayList<>();
+        List<WeatherResponse> weatherResponse = new ArrayList<>();
 
         try {
             JSONArray jsonArray = response.getJSONArray("list");
             for (int i = 0; i < jsonArray.length(); i++) {
-                weatherResponse.add(gson.fromJson(jsonArray.getJSONObject(i).toString(), Response.class));
+                weatherResponse.add(gson.fromJson(jsonArray.getJSONObject(i).toString(), WeatherResponse.class));
             }
             MainAdapter adapter = new MainAdapter(weatherResponse, this);
             recyclerView.setAdapter(adapter);
