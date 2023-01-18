@@ -16,7 +16,7 @@ public class CoutriesResponse {
 
     @SerializedName("data")
     @Expose
-    public CountryData data;
+    public List<CountryData> data;
 
     public boolean isError() {
         return error;
@@ -34,11 +34,11 @@ public class CoutriesResponse {
         this.msg = msg;
     }
 
-    public CountryData getData() {
+    public List<CountryData> getData() {
         return data;
     }
 
-    public void setData(CountryData data) {
+    public void setData(List<CountryData> data) {
         this.data = data;
     }
 }

@@ -1,9 +1,11 @@
 package com.example.weatherapp.ui;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,7 +19,7 @@ import com.example.weatherapp.R;
 import com.example.weatherapp.databinding.ActivityMapsBinding;
 import com.example.weatherapp.model.geo.CityData;
 import com.example.weatherapp.model.geo.CityResponse;
-import com.example.weatherapp.model.geo.CountryPopulationCount;
+import com.example.weatherapp.model.geo.CountryData;
 import com.example.weatherapp.model.geo.CoutriesResponse;
 import com.example.weatherapp.model.weather.WeatherResponse;
 import com.example.weatherapp.networking.GeoAPI;
@@ -33,18 +35,19 @@ import com.google.gson.Gson;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap googleMap;
     private TextView textView;
-    private static ImageView weatherPicture;
-    private static Gson gson;
+    private ImageView weatherPicture;
+    private Gson gson;
     private final Integer MAP_ZOOM = 7;
-    private static double countryLimit;
     private BitmapDrawable drawable;
     private Bitmap bitmap;
+    static List<CountryData> countries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,14 +63,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         textView = findViewById(R.id.weather_details_in_fragment);
         weatherPicture = findViewById(R.id.image_weather_details_in_fragment);
 
+        gson = new Gson();
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_fragment);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+        getCountriesData();
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap1) {
+    public void onMapReady(@NonNull GoogleMap googleMap1) {
         googleMap = googleMap1;
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(51.5085, -0.1257), MAP_ZOOM));
 
@@ -86,7 +92,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        gson = new Gson();
                         WeatherResponse weatherResponse = gson.fromJson(response.toString(), WeatherResponse.class);
 
                         textView.setText(getString(R.string.weather_on_maps
@@ -99,9 +104,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 .load(WeatherAPI.IMAGE_URL + weatherResponse.getWeather().get(0).getIcon()
                                         + WeatherAPI.IMAGE_CODE)
                                 .into(weatherPicture);
-                        //setWeatherPicture(weatherPicture); - works here and
-                        //weatherPicture.getDrawable() dont returns null later
-                        //but pistures is the same
                     }
 
                     @Override
@@ -117,22 +119,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        gson = new Gson();
                         WeatherResponse weatherResponse = gson.fromJson(response.toString(), WeatherResponse.class);
 
-                        //dont work weatherPicture.getDrawable() is null somehow
-//                        Glide.with(getApplicationContext())
-//                                .load(WeatherAPI.IMAGE_URL + weatherResponse.getWeather().get(0).getIcon()
-//                                        + WeatherAPI.IMAGE_CODE)
-//                                .into(weatherPicture);
-//                        setWeatherPicture(weatherPicture);
-//
-//                        drawable = (BitmapDrawable) weatherPicture.getDrawable();
-//                        bitmap = drawable.getBitmap();
-//
-//                        googleMap.addMarker(new MarkerOptions()
-//                                .position(new LatLng(weatherResponse.getCoord().getLat(), weatherResponse.getCoord().getLon()))
-//                                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+                        Glide.with(getApplicationContext())
+                                .load(WeatherAPI.IMAGE_URL + weatherResponse.getWeather().get(0).getIcon()
+                                        + WeatherAPI.IMAGE_CODE)
+                                .into(weatherPicture);
+
+                        drawable = (BitmapDrawable) weatherPicture.getDrawable();
+                        bitmap = drawable.getBitmap();
+
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(weatherResponse.getCoord().getLat(), weatherResponse.getCoord().getLon()))
+                                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
                     }
 
                     @Override
@@ -154,8 +153,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (int i = 0; i < 10 /*cityResponse.getData().size()*/; i++) {
                             CityData cityData = cityResponse.getData().get(i);
                             try {
-                                double population = Double.parseDouble(cityData.getPopulationCounts().get(0).getValue());
-                                if (population > getPopulationLimit(cityData.getCountry())) {
+                                List<String> cityNames = new ArrayList<>();
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    countries.forEach(countryData -> cityNames.add(countryData.getCountry()));
+                                }
+                                int countryIndex = cityNames.indexOf(cityData.getCountry());
+
+                                double cityPpopulation = Double.parseDouble(cityData.getPopulationCounts().get(0).getValue());
+                                double countryPopulationPercentage = 0.1 * Double.parseDouble(countries.get(countryIndex).getPopulationCounts().get(0).getValue());
+
+                                if (cityPpopulation > countryPopulationPercentage) {
                                     showCurrentWeather(cityData.getCity());
                                 }
                             } catch (Exception ignored) {
@@ -169,35 +176,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
     }
 
-    private static double getPopulationLimit(String countryName) {
-        AndroidNetworking.post(GeoAPI.BASE_URL)
-                .addBodyParameter("country", countryName).setPriority(Priority.MEDIUM)
+    private void getCountriesData() {
+        AndroidNetworking.get(GeoAPI.BASE_URL)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        CoutriesResponse countryResponse = gson.fromJson(response.toString(), CoutriesResponse.class);
-                        List<CountryPopulationCount> countryPopulationCount = countryResponse.getData().getPopulationCounts();
-                        try {
-                            countryLimit = 0.1 * Double.parseDouble(countryPopulationCount.get(countryPopulationCount.size() - 1).getValue());
-                            setCountryLimit(countryLimit);
-                        } catch (Exception e) {
-                            countryLimit = 1;
-                        }
+                        saveCountriesData(response);
                     }
 
                     @Override
                     public void onError(ANError anError) {
                     }
                 });
-        return countryLimit;
     }
 
-    public static void setCountryLimit(double countryLimit) {
-        MapsActivity.countryLimit = countryLimit;
-    }
-
-    public void setWeatherPicture(ImageView weatherPicture) {
-        MapsActivity.weatherPicture = weatherPicture;
+    private void saveCountriesData(JSONObject response) {
+        CoutriesResponse countryResponse = gson.fromJson(response.toString(), CoutriesResponse.class);
+        countries = countryResponse.getData();
     }
 }
