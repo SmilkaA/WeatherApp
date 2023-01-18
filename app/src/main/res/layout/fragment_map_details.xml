@@ -23,9 +23,9 @@
 
             <ImageView
                 android:id="@+id/image_weather_details_in_fragment"
-                android:layout_marginLeft="10dp"
                 android:layout_width="wrap_content"
-                android:layout_height="100dp" />
+                android:layout_height="100dp"
+                android:layout_marginLeft="10dp" />
 
             <TextView
                 android:id="@+id/weather_details_in_fragment"
@@ -38,6 +38,12 @@
                 android:textColor="@color/white"
                 android:textSize="15sp" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
+        <ImageView
+            android:id="@+id/icon_on_map_in_fragment"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:layout_margin="4000dp" />
+
+    </androidx.cardview.widget.CardView>
 </RelativeLayout>

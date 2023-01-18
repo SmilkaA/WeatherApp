@@ -43,11 +43,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap googleMap;
     private TextView textView;
     private ImageView weatherPicture;
+    private ImageView iconOnMap;
     private Gson gson;
     private final Integer MAP_ZOOM = 7;
     private BitmapDrawable drawable;
     private Bitmap bitmap;
-    static List<CountryData> countries;
+    private static List<CountryData> countries;
+    private WeatherResponse weatherResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void initComponents() {
         textView = findViewById(R.id.weather_details_in_fragment);
         weatherPicture = findViewById(R.id.image_weather_details_in_fragment);
+        iconOnMap = findViewById(R.id.icon_on_map_in_fragment);
 
         gson = new Gson();
 
@@ -119,25 +122,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        WeatherResponse weatherResponse = gson.fromJson(response.toString(), WeatherResponse.class);
+                        weatherResponse = gson.fromJson(response.toString(), WeatherResponse.class);
 
                         Glide.with(getApplicationContext())
                                 .load(WeatherAPI.IMAGE_URL + weatherResponse.getWeather().get(0).getIcon()
                                         + WeatherAPI.IMAGE_CODE)
-                                .into(weatherPicture);
-
-                        drawable = (BitmapDrawable) weatherPicture.getDrawable();
-                        bitmap = drawable.getBitmap();
-
-                        googleMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(weatherResponse.getCoord().getLat(), weatherResponse.getCoord().getLon()))
-                                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+                                .into(iconOnMap);
                     }
 
                     @Override
                     public void onError(ANError anError) {
                     }
                 });
+        addMarker(weatherResponse.getCoord().getLat(), weatherResponse.getCoord().getLon(), weatherResponse.getMain().getTemp().toString());
     }
 
     private void getCitiesMarkers() {
@@ -182,7 +179,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        saveCountriesData(response);
+                        CoutriesResponse countryResponse = gson.fromJson(response.toString(), CoutriesResponse.class);
+                        countries = countryResponse.getData();
                     }
 
                     @Override
@@ -191,8 +189,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
     }
 
-    private void saveCountriesData(JSONObject response) {
-        CoutriesResponse countryResponse = gson.fromJson(response.toString(), CoutriesResponse.class);
-        countries = countryResponse.getData();
+    private void addMarker(double lat, double lon, String temerature) {
+        drawable = (BitmapDrawable) iconOnMap.getDrawable();
+        bitmap = drawable.getBitmap();
+
+        googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(lat, lon))
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                .title(temerature));
     }
 }
