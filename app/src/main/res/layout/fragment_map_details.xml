@@ -39,11 +39,5 @@
                 android:textSize="15sp" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/icon_on_map_in_fragment"
-            android:layout_width="wrap_content"
-            android:layout_height="70dp"
-            android:layout_margin="4000dp" />
-
     </androidx.cardview.widget.CardView>
 </RelativeLayout>
